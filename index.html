@@ -15,12 +15,12 @@
     }
 
     :root {
-      --q1-bg: #0d0d0d;
-      --q1-accent: #c8a96e;
-      --q2-bg: #0a0e1a;
-      --q2-accent: #6e8fc8;
-      --q3-bg: #0e0d0a;
-      --q3-accent: #2aba6a;
+      --q1-bg: #0e0d0a;
+      --q1-accent: #2aba6a;
+      --q2-bg: #0d0d0d;
+      --q2-accent: #c8a96e;
+      --q3-bg: #0a0e1a;
+      --q3-accent: #6e8fc8;
       --q4-bg: #0d0d0d;
       --q4-accent: #b5742a;
       --text-light: rgba(255,255,255,0.88);
@@ -201,7 +201,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: none;
+      pointer-events: all;
     }
 
     .center-inner {
@@ -342,9 +342,21 @@
 
 <div class="grid">
 
-  <!-- Q1: EnjoyThis -->
-  <a class="quadrant q1" href="https://enjoythis.app" target="_blank" rel="noopener">
+  <!-- Q1: FanSpark -->
+  <a class="quadrant q1" href="https://fanspark.pro" target="_blank" rel="noopener">
     <span class="q-num">1</span>
+    <div class="q-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" color="white">
+        <path d="M7 17L17 7M17 7H7M17 7v10"/>
+      </svg>
+    </div>
+    <div class="q-label">Sports &amp; Creator Economy</div>
+    <div class="q-title"><em>FanSpark.pro</em></div>
+  </a>
+
+  <!-- Q2: EnjoyThis -->
+  <a class="quadrant q2" href="https://enjoythis.app" target="_blank" rel="noopener">
+    <span class="q-num">2</span>
     <div class="q-arrow">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" color="white">
         <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -354,9 +366,9 @@
     <div class="q-title"><em>EnjoyThis</em></div>
   </a>
 
-  <!-- Q2: The Evening Saga -->
-  <a class="quadrant q2" href="https://theeveningsaga.com" target="_blank" rel="noopener">
-    <span class="q-num">2</span>
+  <!-- Q3: The Evening Saga -->
+  <a class="quadrant q3" href="https://theeveningsaga.com" target="_blank" rel="noopener">
+    <span class="q-num">3</span>
     <div class="q-arrow">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" color="white">
         <path d="M7 17L17 7M17 7H7M17 7v10"/>
@@ -364,18 +376,6 @@
     </div>
     <div class="q-label">Ongoing Science Fiction</div>
     <div class="q-title"><em>The Evening<br>Saga</em></div>
-  </a>
-
-  <!-- Q3: FanSpark -->
-  <a class="quadrant q3" href="https://fanspark.pro" target="_blank" rel="noopener">
-    <span class="q-num">3</span>
-    <div class="q-arrow">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" color="white">
-        <path d="M7 17L17 7M17 7H7M17 7v10"/>
-      </svg>
-    </div>
-    <div class="q-label">Sports &amp; Creator Economy</div>
-    <div class="q-title"><em>FanSpark.pro</em></div>
   </a>
 
   <!-- Q4: Coming Soon -->
@@ -387,10 +387,10 @@
 
   <!-- Center -->
   <div class="center">
-    <div class="center-inner">
+    <a class="center-inner" href="https://www.linkedin.com/in/barrettgarese/" target="_blank" rel="noopener" style="text-decoration:none; pointer-events:all;">
       <div class="center-ring"></div>
       <span class="center-first">BARRETT.</span>
-    </div>
+    </a>
   </div>
 
 </div>
