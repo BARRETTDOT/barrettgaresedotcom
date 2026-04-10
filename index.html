@@ -93,7 +93,9 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
       padding: 48px 52px;
       text-decoration: none;
       transition: background var(--transition);
@@ -344,16 +346,21 @@
 
       .quadrant {
         padding: 20px 18px 22px;
-      }
-
-      .q-title {
-        font-size: clamp(20px, 6.5vw, 32px);
+        justify-content: center;
+        align-items: center;
+        text-align: center;
       }
 
       .q-label {
         font-size: 8px;
         letter-spacing: 0.14em;
         margin-bottom: 8px;
+        text-align: center;
+      }
+
+      .q-title {
+        font-size: clamp(20px, 6.5vw, 32px);
+        text-align: center;
       }
 
       .q-num { font-size: 60px; }
