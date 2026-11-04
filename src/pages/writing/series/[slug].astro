@@ -1,0 +1,18 @@
+---
+import ListPage from '../../../components/ListPage.astro';
+import { getPosts, collect, seriesParts, type Post, type Ref } from '../../../lib/sanity';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return collect(posts, (p) => (p.series ? [p.series] : [])).map((ref) => ({
+    params: { slug: ref.slug },
+    props: {
+      ref,
+      posts: seriesParts(posts, ref.slug),
+    },
+  }));
+}
+
+const { ref, posts } = Astro.props as { ref: Ref; posts: Post[] };
+---
+<ListPage kind="Series" title={ref.title} description={ref.description} posts={posts} />

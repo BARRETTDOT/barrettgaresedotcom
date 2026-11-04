@@ -1,0 +1,182 @@
+---
+// Light "paper" reading layout: the default for everything under /writing.
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;        // absolute URL for share previews
+  type?: 'website' | 'article';
+  progress?: boolean;    // reading progress bar (post pages)
+}
+const {
+  title,
+  description = 'Essays, travel and dispatches by Barrett Garese.',
+  image,
+  type = 'website',
+  progress = false,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="alternate" type="application/rss+xml" title="Barrett Garese — Writing" href="/writing/rss.xml" />
+  <meta property="og:site_name" content="Barrett Garese" />
+  <meta property="og:type" content={type} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  {image && <meta property="og:image" content={image} />}
+  <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+  <meta name="theme-color" content="#f5f0e6" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <style is:global>
+    :root {
+      --paper: #f5f0e6;
+      --paper-deep: #ece5d8;
+      --ink: #2a2521;
+      --ink-soft: #6b625a;
+      --ink-faint: #8f857b;
+      --rule: rgba(42, 37, 33, 0.12);
+      --accent: #9c4a59;      /* the homepage's Writing rose, deepened for paper */
+      --display: 'Cormorant Garamond', Georgia, serif;
+      --text: 'Newsreader', Georgia, serif;
+      --ui: 'DM Sans', system-ui, sans-serif;
+      --gutter: clamp(16px, 5vw, 56px);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--text);
+      background:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
+        var(--paper);
+    }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    ::selection { background: rgba(156, 74, 89, 0.18); }
+
+    .masthead {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 24px var(--gutter);
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--ui); font-weight: 300; font-size: 12px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .masthead a { text-decoration: none; color: var(--ink-soft); transition: color .3s ease; }
+    .masthead a:hover { color: var(--accent); }
+    .masthead .home { color: var(--ink); letter-spacing: 0.14em; display: inline-flex; align-items: center; gap: 10px; }
+    .masthead .home::before { content: ''; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--ink-faint); }
+    .masthead nav { display: flex; gap: clamp(14px, 3vw, 28px); }
+
+    .kicker {
+      font-family: var(--ui); font-weight: 400; font-size: 11px;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+    }
+    .kicker a { text-decoration: none; }
+    .kicker a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .meta { font-family: var(--ui); font-size: 13px; color: var(--ink-faint); letter-spacing: 0.02em; }
+
+    .footer {
+      margin-top: 96px; padding: 40px var(--gutter) 56px; border-top: 1px solid var(--rule);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+      font-family: var(--ui); font-size: 12px; letter-spacing: 0.08em; color: var(--ink-faint);
+    }
+    .footer a { text-decoration: none; }
+    .footer a:hover { color: var(--accent); }
+
+    .progress {
+      position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 50;
+      background: var(--accent); transform-origin: 0 50%; transform: scaleX(0);
+    }
+
+    /* Lightbox */
+    .lightbox { border: 0; padding: 0; max-width: 100vw; max-height: 100dvh; width: 100vw; height: 100dvh; background: rgba(20, 17, 15, 0.985); color: #f5f0e6; }
+    .lightbox::backdrop { background: transparent; }
+    .lightbox[open] { display: grid; place-items: center; }
+    .lightbox img { max-width: 94vw; max-height: 84dvh; object-fit: contain; }
+    .lightbox p { font-family: var(--ui); font-size: 13px; letter-spacing: 0.03em; opacity: .75; margin-top: 14px; text-align: center; padding: 0 20px; }
+    .lightbox .lb-inner { display: flex; flex-direction: column; align-items: center; }
+    .lightbox button { position: fixed; background: none; border: 0; color: inherit; font: 300 28px/1 var(--ui); padding: 18px; cursor: pointer; opacity: .7; }
+    .lightbox button:hover { opacity: 1; }
+    .lb-close { top: 8px; right: 8px; }
+    .lb-prev { left: 4px; top: 50%; transform: translateY(-50%); }
+    .lb-next { right: 4px; top: 50%; transform: translateY(-50%); }
+  </style>
+</head>
+<body>
+  {progress && <div class="progress" id="progress" aria-hidden="true"></div>}
+  <header class="masthead">
+    <a class="home" href="/">Barrett.</a>
+    <nav>
+      <a href="/writing">Writing</a>
+      <a href="/writing/rss.xml">RSS</a>
+    </nav>
+  </header>
+  <slot />
+  <footer class="footer">
+    <a href="/">&larr; barrettgarese.com</a>
+    <span>&copy; {new Date().getFullYear()} Barrett Garese</span>
+  </footer>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+    <div class="lb-inner"><img alt="" /><p></p></div>
+    <button class="lb-close" aria-label="Close">&times;</button>
+    <button class="lb-prev" aria-label="Previous photo">&larr;</button>
+    <button class="lb-next" aria-label="Next photo">&rarr;</button>
+  </dialog>
+
+  <script is:inline>
+    // Reading progress
+    (function () {
+      var bar = document.getElementById('progress'); if (!bar) return;
+      var body = document.querySelector('.post-body');
+      function update() {
+        var r = (body || document.body).getBoundingClientRect();
+        var total = r.height - innerHeight * 0.6;
+        var p = Math.min(1, Math.max(0, -r.top / (total || 1)));
+        bar.style.transform = 'scaleX(' + p + ')';
+      }
+      addEventListener('scroll', update, { passive: true }); addEventListener('resize', update); update();
+    })();
+
+    // Lightbox: click any body photo; arrows move within a gallery (or across the post's single photos)
+    (function () {
+      var dlg = document.getElementById('lightbox'); if (!dlg || !dlg.showModal) return;
+      var img = dlg.querySelector('img'), cap = dlg.querySelector('p'), set = [], i = 0;
+      function captionFor(el) {
+        if (el.dataset.caption) return el.dataset.caption;
+        var fig = el.closest('figure'), fc = fig && fig.querySelector(':scope > figcaption');
+        return fc ? fc.textContent : '';
+      }
+      function show() {
+        var el = set[i]; img.src = el.dataset.full || el.currentSrc || el.src; img.alt = el.alt;
+        cap.textContent = captionFor(el);
+        dlg.querySelector('.lb-prev').hidden = dlg.querySelector('.lb-next').hidden = set.length < 2;
+      }
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('.post-body figure img, .post-body .pt-thumb');
+        if (!t) return;
+        if (t.classList.contains('pt-thumb')) t = t.querySelector('img');
+        var g = t.closest('[data-gallery]');
+        set = Array.from(g ? g.querySelectorAll('img') : document.querySelectorAll('.post-body .pt-figure img'));
+        i = set.indexOf(t); show(); dlg.showModal();
+      });
+      function step(d) { i = (i + d + set.length) % set.length; show(); }
+      dlg.querySelector('.lb-close').onclick = function () { dlg.close(); };
+      dlg.querySelector('.lb-prev').onclick = function () { step(-1); };
+      dlg.querySelector('.lb-next').onclick = function () { step(1); };
+      dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.classList.contains('lb-inner')) dlg.close(); });
+      dlg.addEventListener('keydown', function (e) { if (e.key === 'ArrowLeft') step(-1); if (e.key === 'ArrowRight') step(1); });
+    })();
+  </script>
+</body>
+</html>

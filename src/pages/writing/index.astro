@@ -1,0 +1,129 @@
+---
+import Paper from '../../layouts/Paper.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts, collect, seriesParts } from '../../lib/sanity';
+import { imageUrl, srcset, hasImage } from '../../lib/image';
+import { formatDate, readingMinutes, excerptOf } from '../../lib/format';
+
+const posts = await getPosts();
+const [latest, ...rest] = posts;
+const topics = collect(posts, (p) => p.topics);
+const series = collect(posts, (p) => (p.series ? [p.series] : []))
+  .map((s) => ({ ...s, parts: seriesParts(posts, s.slug) }))
+  .sort((a, b) => (a.parts[0].publishedAt < b.parts[0].publishedAt ? 1 : -1));
+
+// group the remaining posts by year
+const byYear = new Map<string, typeof posts>();
+for (const p of rest) {
+  const y = p.publishedAt.slice(0, 4);
+  byYear.set(y, [...(byYear.get(y) ?? []), p]);
+}
+---
+<Paper title="Writing — Barrett Garese" image={latest && hasImage(latest.coverImage) ? imageUrl(latest.coverImage, 1200, 630) : undefined}>
+  <main class="index">
+    <section class="intro">
+      <p class="kicker">Essays, Travel &amp; Dispatches</p>
+      <h1><em>Writing</em></h1>
+      <nav class="topics" aria-label="Topics">
+        <a href="/writing" class="active">All</a>
+        {topics.map((t) => <a href={`/writing/topics/${t.slug}`}>{t.title} <span>{t.count}</span></a>)}
+      </nav>
+    </section>
+
+    {latest && (
+      <section class="latest">
+        <a href={`/writing/${latest.slug}`} class="latest-link">
+          {hasImage(latest.coverImage) && (
+            <div class="latest-img">
+              <img src={imageUrl(latest.coverImage, 1600, 900)} srcset={srcset(latest.coverImage, [800, 1200, 1600, 2200], 0.5625)} sizes="(min-width: 1180px) 1080px, 100vw" alt="" />
+            </div>
+          )}
+          <div class="latest-text">
+            <p class="kicker">Latest{latest.series ? ` · ${latest.series.title}${latest.seriesPart ? `, Part ${latest.seriesPart}` : ''}` : ''}</p>
+            <h2>{latest.title}</h2>
+            <p class="latest-excerpt">{excerptOf(latest, 320)}</p>
+            <p class="meta">{formatDate(latest.publishedAt)} · {readingMinutes(latest.body)} min read</p>
+          </div>
+        </a>
+      </section>
+    )}
+
+    {series.length > 0 && (
+      <section class="series">
+        <h2 class="section-title">Series</h2>
+        {series.map((s) => (
+          <div class="shelf">
+            <div class="shelf-head">
+              <h3><a href={`/writing/series/${s.slug}`}>{s.title}</a></h3>
+              <span class="meta">{s.parts.length} parts · {s.parts[0].publishedAt.slice(0, 4)}</span>
+            </div>
+            <div class="shelf-row">
+              {s.parts.map((p) => <PostCard post={p} variant="tile" inSeries />)}
+            </div>
+          </div>
+        ))}
+      </section>
+    )}
+
+    <section class="archive">
+      <h2 class="section-title">Everything</h2>
+      {[...byYear].map(([year, list]) => (
+        <div class="year">
+          <h3 class="year-label">{year}</h3>
+          <div>{list.map((p) => <PostCard post={p} />)}</div>
+        </div>
+      ))}
+    </section>
+  </main>
+</Paper>
+
+<style>
+  .index { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter); }
+  .intro { text-align: center; padding: clamp(56px, 10vh, 110px) 0 40px; }
+  .intro .kicker { margin-bottom: 16px; }
+  h1 { font-family: var(--display); font-weight: 300; font-size: clamp(56px, 9vw, 96px); line-height: 1; letter-spacing: -0.01em; }
+  h1 em { font-style: italic; }
+  .topics { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 36px; }
+  .topics a {
+    font-family: var(--ui); font-size: 13px; letter-spacing: 0.04em; text-decoration: none; color: var(--ink-soft);
+    padding: 8px 16px; border: 1px solid var(--rule); border-radius: 999px; transition: all .25s ease;
+  }
+  .topics a span { color: var(--ink-faint); margin-left: 4px; font-size: 12px; }
+  .topics a:hover, .topics a.active { border-color: var(--accent); color: var(--accent); }
+
+  .latest { margin: 40px 0 88px; }
+  .latest-link { display: block; text-decoration: none; color: inherit; }
+  .latest-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--paper-deep); }
+  .latest-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  .latest-link:hover .latest-img img { transform: scale(1.015); }
+  .latest-text { max-width: 760px; margin: 32px auto 0; text-align: center; }
+  .latest-text h2 { font-family: var(--display); font-weight: 400; font-size: clamp(34px, 4.6vw, 54px); line-height: 1.06; margin: 14px 0 16px; transition: color .3s ease; }
+  .latest-link:hover h2 { color: var(--accent); }
+  .latest-excerpt { font-size: 19px; line-height: 1.6; color: var(--ink-soft); margin-bottom: 16px; }
+
+  .section-title {
+    font-family: var(--ui); font-weight: 400; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-soft); display: flex; align-items: center; gap: 18px; margin-bottom: 28px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+  .series { margin-bottom: 88px; }
+  .shelf { margin-bottom: 52px; }
+  .shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .shelf-head h3 { font-family: var(--display); font-weight: 400; font-style: italic; font-size: 30px; }
+  .shelf-head a { text-decoration: none; }
+  .shelf-head a:hover { color: var(--accent); }
+  .shelf-row {
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 24px;
+    overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; scrollbar-width: thin;
+  }
+  .shelf-row > :global(*) { scroll-snap-align: start; }
+
+  .year { display: grid; grid-template-columns: 120px 1fr; gap: 24px; }
+  .year-label { font-family: var(--display); font-weight: 300; font-size: 34px; color: var(--ink-faint); padding-top: 28px; position: sticky; top: 16px; align-self: start; }
+  @media (max-width: 760px) {
+    .year { grid-template-columns: 1fr; gap: 0; }
+    .year-label { position: static; padding-top: 24px; }
+    .shelf-row { grid-auto-columns: 72%; }
+  }
+</style>
