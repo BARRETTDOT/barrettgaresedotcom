@@ -2,6 +2,7 @@ import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { getPosts } from '../../lib/sanity';
 import { toHTML } from '../../lib/portableText';
+import { siteImages } from '../../lib/image';
 import { excerptOf } from '../../lib/format';
 
 export async function GET(context: APIContext) {
@@ -15,7 +16,7 @@ export async function GET(context: APIContext) {
       link: `/writing/${p.slug}`,
       pubDate: new Date(p.publishedAt),
       description: excerptOf(p, 300),
-      content: toHTML(p.body),
+      content: toHTML(p.body, siteImages),
       categories: [...p.topics, ...p.places].map((r) => r.title),
     })),
   });

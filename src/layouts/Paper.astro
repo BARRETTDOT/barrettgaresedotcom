@@ -15,9 +15,10 @@ const {
   progress = false,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+import '../styles/post.css';
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="paper">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,19 +39,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <style is:global>
-    :root {
-      --paper: #f5f0e6;
-      --paper-deep: #ece5d8;
-      --ink: #2a2521;
-      --ink-soft: #6b625a;
-      --ink-faint: #8f857b;
-      --rule: rgba(42, 37, 33, 0.12);
-      --accent: #9c4a59;      /* the homepage's Writing rose, deepened for paper */
-      --display: 'Cormorant Garamond', Georgia, serif;
-      --text: 'Newsreader', Georgia, serif;
-      --ui: 'DM Sans', system-ui, sans-serif;
-      --gutter: clamp(16px, 5vw, 56px);
-    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
     body {
@@ -77,13 +65,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     .masthead .home::before { content: ''; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--ink-faint); }
     .masthead nav { display: flex; gap: clamp(14px, 3vw, 28px); }
 
-    .kicker {
-      font-family: var(--ui); font-weight: 400; font-size: 11px;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
-    }
-    .kicker a { text-decoration: none; }
-    .kicker a:hover { text-decoration: underline; text-underline-offset: 3px; }
-    .meta { font-family: var(--ui); font-size: 13px; color: var(--ink-faint); letter-spacing: 0.02em; }
 
     .footer {
       margin-top: 96px; padding: 40px var(--gutter) 56px; border-top: 1px solid var(--rule);

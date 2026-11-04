@@ -12,4 +12,10 @@ export default defineCliConfig({
      */
     autoUpdates: true,
   },
+  // The Preview tab reuses the website's renderer and styles from ../src, so let the
+  // dev server read files from the repo root as well as studio/.
+  vite: (config) => ({
+    ...config,
+    server: {...config.server, fs: {...config.server?.fs, allow: [...(config.server?.fs?.allow ?? []), '..']}},
+  }),
 })
