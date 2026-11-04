@@ -1,5 +1,7 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
-import {ImagesIcon, BlockquoteIcon, RemoveIcon} from '@sanity/icons'
+import {ImagesIcon} from '@sanity/icons/Images'
+import {BlockquoteIcon} from '@sanity/icons/Blockquote'
+import {RemoveIcon} from '@sanity/icons/Remove'
 
 export const gallery = defineType({
   name: 'gallery',

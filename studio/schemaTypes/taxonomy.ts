@@ -1,5 +1,7 @@
 import {defineField, defineType} from 'sanity'
-import {TagIcon, PinIcon, BookIcon} from '@sanity/icons'
+import {TagIcon} from '@sanity/icons/Tag'
+import {PinIcon} from '@sanity/icons/Pin'
+import {BookIcon} from '@sanity/icons/Book'
 
 const slugField = defineField({name: 'slug', type: 'slug', options: {source: 'title'}, validation: (r) => r.required()})
 
