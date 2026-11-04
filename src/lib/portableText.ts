@@ -1,5 +1,11 @@
 // Minimal, dependency-free Portable Text -> HTML for the post body.
-import { imageUrl, srcset, hasImage } from './image';
+// Shared by the site (Astro) and the Studio's Preview tab, so it imports nothing:
+// image URL helpers are passed in by the caller.
+export interface ImageHelpers {
+  imageUrl(src: any, width: number, height?: number): string;
+  srcset(src: any, widths: number[], ratio?: number): string;
+  hasImage(src: any): boolean;
+}
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -23,7 +29,8 @@ function spans(block: any): string {
     .join('');
 }
 
-function figure(img: any, width: string = img.width ?? 'wide'): string {
+function figure(h: ImageHelpers, img: any, width: string = img.width ?? 'wide'): string {
+  const { imageUrl, srcset, hasImage } = h;
   if (!hasImage(img)) return '';
   const alt = esc(img.alt ?? img.caption ?? '');
   const sizes = width === 'column' ? '(min-width: 760px) 680px, 100vw' : width === 'wide' ? '(min-width: 1100px) 1040px, 100vw' : '100vw';
@@ -33,7 +40,8 @@ function figure(img: any, width: string = img.width ?? 'wide'): string {
 </figure>`;
 }
 
-function gallery(g: any): string {
+function gallery(h: ImageHelpers, g: any): string {
+  const { imageUrl, srcset, hasImage } = h;
   const imgs = (g.images ?? []).filter(hasImage);
   if (!imgs.length) return '';
   const cls = imgs.length === 1 ? 'one' : imgs.length === 2 ? 'two' : 'many';
@@ -48,7 +56,7 @@ function gallery(g: any): string {
 </figure>`;
 }
 
-export function toHTML(blocks: any[] = []): string {
+export function toHTML(blocks: any[] = [], h: ImageHelpers): string {
   const out: string[] = [];
   let list: string | null = null;
   const closeList = () => { if (list) { out.push(list === 'number' ? '</ol>' : '</ul>'); list = null; } };
@@ -68,8 +76,8 @@ export function toHTML(blocks: any[] = []): string {
         out.push(`<${tag}>${inner}</${tag}>`);
         break;
       }
-      case 'image': out.push(figure(b)); break;
-      case 'gallery': out.push(gallery(b)); break;
+      case 'image': out.push(figure(h, b)); break;
+      case 'gallery': out.push(gallery(h, b)); break;
       case 'pullQuote': out.push(`<aside class="pt-pull"><p>${esc(b.text ?? '')}</p></aside>`); break;
       case 'divider': out.push(b.style === 'line' ? '<hr class="pt-rule">' : '<hr class="pt-asterism">'); break;
     }

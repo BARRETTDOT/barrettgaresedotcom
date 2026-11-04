@@ -29,3 +29,6 @@ export function imageUrl(src: any, width: number, height?: number): string {
 export function srcset(src: any, widths: number[], ratio?: number): string {
   return widths.map((w) => `${imageUrl(src, w, ratio ? Math.round(w * ratio) : undefined)} ${w}w`).join(', ');
 }
+
+/** Bundle for the shared body renderer. */
+export const siteImages = { imageUrl, srcset, hasImage };

@@ -17,6 +17,7 @@ export const sanity = createClient({
 export interface Ref { title: string; slug: string; order?: number; description?: string }
 export interface Post {
   _id: string;
+  _updatedAt?: string;
   title: string;
   subtitle?: string;
   slug: string;
@@ -31,7 +32,7 @@ export interface Post {
 }
 
 const POSTS_QUERY = `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
-  _id, title, subtitle, "slug": slug.current, publishedAt, excerpt, coverImage, body, seriesPart,
+  _id, _updatedAt, title, subtitle, "slug": slug.current, publishedAt, excerpt, coverImage, body, seriesPart,
   "topics": coalesce(topics[]->{title, "slug": slug.current, order}, []),
   "places": coalesce(places[]->{title, "slug": slug.current}, []),
   "series": series->{title, "slug": slug.current, description}
@@ -47,7 +48,7 @@ function fromFixture(path: string): Post[] {
   return docs
     .filter((d) => d._type === 'post' && !d._id.startsWith('drafts.'))
     .map((d) => ({
-      _id: d._id, title: d.title, subtitle: d.subtitle, slug: d.slug.current, publishedAt: d.publishedAt,
+      _id: d._id, _updatedAt: d._updatedAt, title: d.title, subtitle: d.subtitle, slug: d.slug.current, publishedAt: d.publishedAt,
       excerpt: d.excerpt, coverImage: d.coverImage, body: d.body ?? [], seriesPart: d.seriesPart,
       topics: (d.topics ?? []).map(ref).filter(Boolean), places: (d.places ?? []).map(ref).filter(Boolean),
       series: ref(d.series),
