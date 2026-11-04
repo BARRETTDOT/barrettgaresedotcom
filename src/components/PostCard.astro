@@ -1,0 +1,57 @@
+---
+import type { Post } from '../lib/sanity';
+import { imageUrl, srcset, hasImage } from '../lib/image';
+import { formatDate, readingMinutes, excerptOf } from '../lib/format';
+
+interface Props { post: Post; variant?: 'row' | 'tile'; inSeries?: boolean }
+const { post, variant = 'row', inSeries = false } = Astro.props;
+const kicker = post.series
+  ? inSeries
+    ? (post.seriesPart ? `Part ${post.seriesPart}` : '')
+    : `${post.series.title}${post.seriesPart ? ` · Part ${post.seriesPart}` : ''}`
+  : post.topics.map((t) => t.title).join(' · ');
+---
+<article class={`card card-${variant}`}>
+  <a href={`/writing/${post.slug}`} class="card-link">
+    {hasImage(post.coverImage) && (
+      <div class="card-img">
+        <img
+          src={imageUrl(post.coverImage, 800, 520)}
+          srcset={srcset(post.coverImage, [400, 800, 1200], 0.65)}
+          sizes={variant === 'tile' ? '(min-width: 900px) 300px, 70vw' : '(min-width: 900px) 320px, 100vw'}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    )}
+    <div class="card-text">
+      {kicker && <p class="kicker">{kicker}</p>}
+      <h3>{post.title}</h3>
+      {variant === 'row' && <p class="card-excerpt">{excerptOf(post)}</p>}
+      <p class="meta">{formatDate(post.publishedAt)} · {readingMinutes(post.body)} min read</p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card-link { display: grid; text-decoration: none; color: inherit; }
+  .card-row .card-link { grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; align-items: center; padding: 34px 0; border-top: 1px solid var(--rule); }
+  .card-row .card-img { order: 2; }
+  .card-row:not(:has(.card-img)) .card-link { grid-template-columns: 1fr; }
+  .card-img { aspect-ratio: 20 / 13; overflow: hidden; background: var(--paper-deep); }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1); filter: saturate(0.92); }
+  .card-link:hover .card-img img { transform: scale(1.025); }
+  h3 {
+    font-family: var(--display); font-weight: 500; font-size: clamp(25px, 2.6vw, 32px);
+    line-height: 1.12; letter-spacing: -0.005em; margin: 10px 0 12px; transition: color .3s ease;
+  }
+  .card-link:hover h3 { color: var(--accent); }
+  .card-excerpt { font-size: 17.5px; line-height: 1.55; color: var(--ink-soft); margin-bottom: 14px; max-width: 36em; }
+  .card-tile h3 { font-size: 22px; margin: 8px 0 8px; }
+  .card-tile .card-link { gap: 14px; }
+  @media (max-width: 760px) {
+    .card-row .card-link { grid-template-columns: 1fr; gap: 18px; padding: 28px 0; }
+    .card-row .card-img { order: 0; }
+  }
+</style>

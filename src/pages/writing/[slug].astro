@@ -1,0 +1,180 @@
+---
+import Paper from '../../layouts/Paper.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts, seriesParts, type Post } from '../../lib/sanity';
+import { imageUrl, srcset, hasImage } from '../../lib/image';
+import { toHTML } from '../../lib/portableText';
+import { formatDate, readingMinutes, excerptOf } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props as { post: Post };
+const posts = await getPosts();
+const html = toHTML(post.body);
+const minutes = readingMinutes(post.body);
+
+const parts = post.series ? seriesParts(posts, post.series.slug) : [];
+const idx = parts.findIndex((p) => p._id === post._id);
+const prevPart = idx > 0 ? parts[idx - 1] : undefined;
+const nextPart = idx >= 0 && idx < parts.length - 1 ? parts[idx + 1] : undefined;
+
+// related: share a place or topic, not in the same series; places count double
+const score = (p: Post) =>
+  2 * p.places.filter((x) => post.places.some((y) => y.slug === x.slug)).length +
+  p.topics.filter((x) => post.topics.some((y) => y.slug === x.slug)).length;
+const related = posts
+  .filter((p) => p._id !== post._id && (!post.series || p.series?.slug !== post.series.slug))
+  .map((p) => ({ p, s: score(p) }))
+  .filter((x) => x.s > 0)
+  .sort((a, b) => b.s - a.s || (a.p.publishedAt < b.p.publishedAt ? 1 : -1))
+  .slice(0, 3)
+  .map((x) => x.p);
+---
+<Paper
+  title={`${post.title} — Barrett Garese`}
+  description={excerptOf(post, 200)}
+  image={hasImage(post.coverImage) ? imageUrl(post.coverImage, 1200, 630) : undefined}
+  type="article"
+  progress
+>
+  <article class="post">
+    <header class="post-head">
+      <p class="kicker">
+        {post.series ? (
+          <a href={`/writing/series/${post.series.slug}`}>{post.series.title}{post.seriesPart ? ` · Part ${post.seriesPart} of ${parts.length}` : ''}</a>
+        ) : (
+          post.topics.map((t, i) => <>{i > 0 && ' · '}<a href={`/writing/topics/${t.slug}`}>{t.title}</a></>)
+        )}
+      </p>
+      <h1>{post.title}</h1>
+      {post.subtitle && <p class="subtitle">{post.subtitle}</p>}
+      <p class="meta">
+        <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time> · {minutes} min read
+        {post.places.length > 0 && <> · {post.places.map((pl, i) => <>{i > 0 && ', '}<a href={`/writing/places/${pl.slug}`}>{pl.title}</a></>)}</>}
+      </p>
+    </header>
+
+    {hasImage(post.coverImage) && (
+      <figure class="cover">
+        <img
+          src={imageUrl(post.coverImage, 1800)}
+          srcset={srcset(post.coverImage, [800, 1200, 1800, 2400])}
+          sizes="(min-width: 1180px) 1120px, 100vw"
+          alt={post.coverImage.alt ?? ''}
+          fetchpriority="high"
+        />
+        {post.coverImage.caption && <figcaption>{post.coverImage.caption}</figcaption>}
+      </figure>
+    )}
+
+    <div class="post-body" set:html={html} />
+
+    {parts.length > 1 && (
+      <nav class="series-nav" aria-label={`${post.series!.title} series`}>
+        <p class="kicker">The series</p>
+        <h2><a href={`/writing/series/${post.series!.slug}`}>{post.series!.title}</a></h2>
+        <ol>
+          {parts.map((p) => (
+            <li class={p._id === post._id ? 'current' : ''}>
+              <span class="num">{p.seriesPart ?? '·'}</span>
+              {p._id === post._id ? <span>{p.title}</span> : <a href={`/writing/${p.slug}`}>{p.title}</a>}
+            </li>
+          ))}
+        </ol>
+        <div class="prev-next">
+          {prevPart ? <a href={`/writing/${prevPart.slug}`} class="prev"><span class="meta">&larr; Previous</span>{prevPart.title}</a> : <span />}
+          {nextPart ? <a href={`/writing/${nextPart.slug}`} class="next"><span class="meta">Next &rarr;</span>{nextPart.title}</a> : <span />}
+        </div>
+      </nav>
+    )}
+
+    {related.length > 0 && (
+      <section class="related">
+        <h2 class="related-title">Keep reading</h2>
+        <div class="related-row">{related.map((p) => <PostCard post={p} variant="tile" />)}</div>
+      </section>
+    )}
+  </article>
+</Paper>
+
+<style>
+  .post { --measure: 680px; padding: 0 var(--gutter); }
+  .post-head { max-width: 860px; margin: 0 auto; text-align: center; padding: clamp(56px, 11vh, 120px) 0 44px; }
+  .post-head .kicker { margin-bottom: 20px; }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 6vw, 72px); line-height: 1.03; letter-spacing: -0.012em; text-wrap: balance; }
+  .subtitle { font-family: var(--display); font-style: italic; font-size: clamp(22px, 2.4vw, 28px); color: var(--ink-soft); margin-top: 18px; }
+  .post-head .meta { margin-top: 26px; }
+  .post-head .meta a { text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .post-head .meta a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .cover { max-width: 1120px; margin: 0 auto 64px; }
+  .cover img { width: 100%; max-height: 82vh; object-fit: cover; }
+  .cover figcaption { font-family: var(--ui); font-size: 13px; color: var(--ink-faint); margin-top: 12px; text-align: center; }
+
+  /* ---------- Body typography ---------- */
+  .post-body { max-width: var(--measure); margin: 0 auto; font-size: 20px; line-height: 1.68; font-optical-sizing: auto; }
+  .post-body :global(p) { margin: 0 0 1.15em; hanging-punctuation: first; }
+  .post-body > :global(p:first-of-type::first-letter) {
+    font-family: var(--display); font-weight: 500; float: left; font-size: 4.4em; line-height: 0.82;
+    margin: 0.08em 0.1em 0 -0.02em; color: var(--accent);
+  }
+  .post-body :global(h2) { font-family: var(--display); font-weight: 500; font-size: 34px; line-height: 1.15; margin: 1.9em 0 0.6em; }
+  .post-body :global(h3) { font-family: var(--ui); font-weight: 500; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); margin: 2.2em 0 1em; }
+  .post-body :global(a) { text-decoration-color: rgba(156, 74, 89, 0.45); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .post-body :global(a:hover) { color: var(--accent); text-decoration-color: var(--accent); }
+  .post-body :global(blockquote) { margin: 1.6em 0; padding-left: 1.2em; border-left: 2px solid var(--accent); font-style: italic; color: var(--ink-soft); }
+  .post-body :global(ul), .post-body :global(ol) { margin: 0 0 1.3em 1.3em; }
+  .post-body :global(li) { margin-bottom: 0.45em; padding-left: 0.25em; }
+  .post-body :global(li::marker) { color: var(--accent); }
+  .post-body :global(.pt-asterism) { border: 0; text-align: center; margin: 2.4em 0; }
+  .post-body :global(.pt-asterism::before) { content: '⁂'; color: var(--accent); font-size: 22px; }
+  .post-body :global(.pt-rule) { border: 0; height: 1px; background: var(--rule); margin: 2.4em 0; }
+  .post-body :global(.pt-pull) { margin: 1.8em -6%; text-align: center; }
+  .post-body :global(.pt-pull p) { font-family: var(--display); font-style: italic; font-size: 32px; line-height: 1.25; color: var(--accent); }
+
+  /* Images break out of the text column */
+  .post-body :global(figure) { margin: 2.4em 0; }
+  .post-body :global(.pt-figure img) { width: 100%; height: auto; cursor: zoom-in; background: var(--paper-deep); }
+  .post-body :global(.pt-wide) { width: min(1040px, 100vw - 2 * var(--gutter)); margin-left: 50%; transform: translateX(-50%); }
+  .post-body :global(.pt-full-bleed) { width: 100vw; margin-left: 50%; transform: translateX(-50%); }
+  .post-body :global(.pt-full-bleed figcaption) { padding: 0 var(--gutter); }
+  .post-body :global(figcaption) { font-family: var(--ui); font-size: 13.5px; line-height: 1.5; color: var(--ink-faint); margin-top: 12px; text-align: center; }
+
+  .post-body :global(.pt-gallery) { width: min(1040px, 100vw - 2 * var(--gutter)); margin-left: 50%; transform: translateX(-50%); display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); }
+  .post-body :global(.pt-gallery-two) { grid-template-columns: repeat(2, 1fr); }
+  .post-body :global(.pt-gallery-one) { grid-template-columns: 1fr; }
+  .post-body :global(.pt-gallery figcaption) { grid-column: 1 / -1; }
+  .post-body :global(.pt-thumb) { border: 0; padding: 0; background: var(--paper-deep); cursor: zoom-in; aspect-ratio: 4 / 3; overflow: hidden; }
+  .post-body :global(.pt-thumb img) { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(0.22, 1, 0.36, 1), filter .3s; }
+  .post-body :global(.pt-thumb:hover img) { transform: scale(1.03); }
+  @media (max-width: 760px) {
+    .post-body { font-size: 18.5px; line-height: 1.64; }
+    .post-body :global(.pt-gallery) { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .post-body :global(.pt-pull) { margin: 1.6em 0; }
+    .post-body :global(.pt-pull p) { font-size: 26px; }
+  }
+
+  /* ---------- Series navigation ---------- */
+  .series-nav { max-width: var(--measure); margin: 88px auto 0; padding: 36px 0 0; border-top: 1px solid var(--rule); }
+  .series-nav h2 { font-family: var(--display); font-weight: 400; font-style: italic; font-size: 32px; margin: 8px 0 18px; }
+  .series-nav h2 a { text-decoration: none; }
+  .series-nav ol { list-style: none; margin: 0 0 32px; }
+  .series-nav li { display: grid; grid-template-columns: 32px 1fr; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 17px; }
+  .series-nav li a { text-decoration: none; color: var(--ink-soft); }
+  .series-nav li a:hover { color: var(--accent); }
+  .series-nav li.current { font-weight: 500; }
+  .series-nav .num { font-family: var(--display); font-size: 20px; color: var(--ink-faint); line-height: 1.2; }
+  .series-nav li.current .num { color: var(--accent); }
+  .prev-next { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .prev-next a { text-decoration: none; display: flex; flex-direction: column; gap: 6px; font-family: var(--display); font-size: 22px; line-height: 1.2; }
+  .prev-next a:hover { color: var(--accent); }
+  .prev-next .next { text-align: right; }
+
+  .related { max-width: 1040px; margin: 96px auto 0; }
+  .related-title { font-family: var(--ui); font-weight: 400; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); text-align: center; margin-bottom: 28px; }
+  .related-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  @media (max-width: 760px) { .related-row { grid-template-columns: 1fr; } .prev-next { grid-template-columns: 1fr; } .prev-next .next { text-align: left; } }
+</style>
