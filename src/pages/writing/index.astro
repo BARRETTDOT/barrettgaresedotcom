@@ -1,0 +1,30 @@
+---
+import Paper from '../../layouts/Paper.astro';
+---
+<Paper title="Writing — Barrett Garese">
+  <main class="soon">
+    <p class="kicker">Essays, Travel &amp; Dispatches</p>
+    <h1><em>Writing</em></h1>
+    <p class="note">The archive is on its way: Italy, Scotland, Greece, Colombia, and everything in between.</p>
+    <a class="back" href="/">&larr; Back to the beginning</a>
+  </main>
+</Paper>
+
+<style>
+  .soon {
+    max-width: 640px; margin: 0 auto; padding: clamp(80px, 18vh, 180px) 24px 96px;
+    text-align: center;
+  }
+  .kicker {
+    font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 12px;
+    letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px;
+  }
+  h1 { font-weight: 300; font-size: clamp(48px, 9vw, 84px); line-height: 1; letter-spacing: -0.01em; }
+  h1 em { font-style: italic; }
+  .note { margin: 28px auto 40px; font-size: 22px; line-height: 1.5; color: var(--ink-soft); max-width: 30em; }
+  .back {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; letter-spacing: 0.08em;
+    color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 3px;
+  }
+  .back:hover { color: var(--accent); border-color: var(--accent); }
+</style>

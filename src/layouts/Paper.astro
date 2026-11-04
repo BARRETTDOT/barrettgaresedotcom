@@ -1,0 +1,54 @@
+---
+// Light "paper" reading layout — the default for everything under /writing.
+interface Props { title: string; description?: string }
+const { title, description = 'Essays, travel and dispatches by Barrett Garese.' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style is:global>
+    :root {
+      --paper: #f5f0e6;
+      --ink: #2a2521;
+      --ink-soft: #6b625a;
+      --rule: rgba(42,37,33,0.12);
+      --accent: #9c4a59;   /* deeper take on the homepage's Writing rose, legible on paper */
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100dvh;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      background:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
+        var(--paper);
+    }
+    a { color: inherit; }
+    .masthead {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 28px clamp(16px, 5vw, 56px);
+      border-bottom: 1px solid var(--rule);
+      font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 12px;
+      letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .masthead a { text-decoration: none; color: var(--ink-soft); transition: color .3s ease; }
+    .masthead a:hover { color: var(--accent); }
+    .masthead .home { color: var(--ink); letter-spacing: 0.14em; }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <a class="home" href="/">Barrett.</a>
+    <a href="/writing">Writing</a>
+  </header>
+  <slot />
+</body>
+</html>
